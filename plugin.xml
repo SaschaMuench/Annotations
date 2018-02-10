@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="4.7"?>
+<plugin id="GenerateTranslation" name="GenerateTranslation Plug-in" version="1.0.0" provider-name="" class="de.sonnmatt.processor.GenerateTranslationProcessor">
+
+	<runtime>
+		<library name="GenerateTranslationProcessor.jar" />
+	</runtime>
+
+	<requires>
+		<import plugin="org.eclipse.core.runtime" />
+		<import plugin="org.eclipse.jdt.apt.core" />
+	</requires>
+
+	<extension point="de.sonnmatt.processor.GenerateTranslationProcessor">
+		<factories enableDefault="true">
+			<factory class="de.sonnmatt.processor.GenerateTranslationProcessor" />
+		</factories>
+	</extension>
+
+</plugin>

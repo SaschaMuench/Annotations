@@ -11,10 +11,8 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <javaElement handleIdentifier="=Annotations/src"/>
-        <file path="/Annotations/.classpath"/>
-        <file path="/Annotations/.project"/>
         <file path="/Annotations/plugin.xml"/>
         <folder path="/Annotations/META-INF"/>
+        <javaElement handleIdentifier="=Annotations/src"/>
     </selectedElements>
 </jardesc>

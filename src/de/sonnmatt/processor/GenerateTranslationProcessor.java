@@ -17,9 +17,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
 import javax.xml.parsers.DocumentBuilder;
@@ -39,7 +37,7 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 
 	public static final String	PATH_SEPARATOR	= "\\";
 
-	private Elements						elementUtils;
+//	private Elements						elementUtils;
 	private Filer							filer;
 	private Messager						messager;
 	private Map<String, String>				options;
@@ -51,8 +49,9 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 		public String	dataType;
 		public String	dataTypeShort;
 		public String	internal;
-		public String	sections;
-		public String	section;
+		//public String	sections;
+		//public String	section;
+		public String   namePrefix;
 		public String   returnValue;
 	}
 
@@ -94,7 +93,7 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
-		elementUtils = processingEnv.getElementUtils();
+//		elementUtils = processingEnv.getElementUtils();
 		filer = processingEnv.getFiler();
 		messager = processingEnv.getMessager();
 		options = processingEnv.getOptions();
@@ -144,9 +143,6 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 			printInfo("xmlFileName: %s", annotatedXML.value());
 			TypeElement typeElement = (TypeElement) annotatedElement;
 
-			TypeElement superClassName = elementUtils.getTypeElement(typeElement.getQualifiedName());
-			PackageElement pkg = elementUtils.getPackageOf(superClassName);
-			
 			String fullXmlFilename = typeElement.getQualifiedName() + " ";
 			fullXmlFilename = fullXmlFilename.replace(typeElement.getSimpleName() + " ", "").replace(".", PATH_SEPARATOR);
 			fullXmlFilename = options.get("Sourcepath") + fullXmlFilename + annotatedXML.value();
@@ -177,12 +173,12 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 					pw.println(" * ");
 					pw.println(" * Do not change! File will be generated automatic. All changes will be lost");
 					pw.println(" */");
-					pw.println("package %s;", pkg.getQualifiedName().toString()); // package
+					pw.println("package %s;", packageName(e.getValue().type)); // package
 					pw.println();
 					for (HashMap.Entry<String, AttributeSet> entry : namedAttribMap.entrySet()) {
 						if (e.getKey().equals(entry.getKey())) {
 							pw.println("import %s;", entry.getValue().dataType);
-							pw.println("import %s;", entry.getValue().sections);
+							//pw.println("import %s;", entry.getValue().sections);
 						}
 					}
 					pw.println();
@@ -245,6 +241,10 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 		return nodeValue.substring(nodeValue.lastIndexOf(".") + 1);
 	}
 
+	private String packageName(String nodeValue) {
+		return nodeValue.substring(0, nodeValue.lastIndexOf("."));
+	}
+
 	/**
 	 * @param nodeList
 	 * @return HashMap with field as key and attributeSet as value
@@ -269,8 +269,10 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 							attribs.dataTypeShort = shortName(attribs.dataType);
 							attribs.returnValue  = attribNodes.getNamedItem("returnValue").getNodeValue();
 							attribs.internal = attribNodes.getNamedItem("internal").getNodeValue();
-							attribs.sections = attribNodes.getNamedItem("sections").getNodeValue();
-							attribs.section = attribNodes.getNamedItem("section").getNodeValue();
+							//attribs.sections = attribNodes.getNamedItem("sections").getNodeValue();
+							//attribs.section = attribNodes.getNamedItem("section").getNodeValue();
+							attribs.namePrefix = attribNodes.getNamedItem("namePrefix").getNodeValue();
+							
 						}
 					}
 					printInfo("Attributes from: %s", attribs.field);
@@ -306,10 +308,12 @@ public class GenerateTranslationProcessor extends AbstractProcessor {
 		printInfo("Generate method: %s", methodName);
 		String metName = methodName.substring(methodName.indexOf(".") + 1);
 		String prefixName = methodName.substring(0, methodName.indexOf("."));
-		String section = shortName(namedAttribMap.get(prefixName).sections) + "." + namedAttribMap.get(prefixName).section;
+		//String section = shortName(namedAttribMap.get(prefixName).sections) + "." + namedAttribMap.get(prefixName).section;
+		String section = namedAttribMap.get(prefixName).namePrefix;
 
 		pw.println(1, "public %s %s() {", namedAttribMap.get(prefixName).returnValue, metName);
-		pw.println(2, "return %s.get(%s, \"%s\");", namedAttribMap.get(prefixName).internal, section, metName);
+		//pw.println(2, "return %s.get(%s, \"%s\");", namedAttribMap.get(prefixName).internal, section, metName);
+		pw.println(2, "return %s.get(\"%s.%s\");", namedAttribMap.get(prefixName).internal, section, metName);
 		pw.println(1, "}");
 		pw.println();
 	}
